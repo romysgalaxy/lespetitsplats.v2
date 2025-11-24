@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import styles from './RecipeCard.module.css';
+import Link from 'next/link';
 
 export interface Ingredient {
   ingredient: string;
@@ -26,11 +27,16 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
+        <Link
+      href={`/recette/${recipe.slug}`}
+      className={styles.link}
+      aria-label={`Voir la recette ${recipe.name}`}
+    >
     <article className={styles.card}>
       {/* IMAGE + badge temps */}
       <div className={styles.imageWrapper}>
         <Image
-          src={`/recipes/${recipe.image}`} // adapte le chemin si besoin
+          src={`/recipes/${recipe.image}`}
           alt={recipe.name}
           fill
           sizes="(min-width: 1024px) 320px, (min-width: 768px) 33vw, 100vw"
@@ -73,5 +79,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
       </div>
     </article>
+    </Link>
   );
 }

@@ -2,9 +2,19 @@ import Image from 'next/image';
 import styles from './Header.module.css';
 import SearchBar from './SearchBar';
 
-export default function Header() {
+interface HeaderProps {
+  /** 
+   * false (ou rien) = header complet avec titre + search
+   * true = version compacte (logo seul, header ≈ 120px)
+   */
+  compact?: boolean;
+}
+
+export default function Header({ compact = false }: HeaderProps) {
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${compact ? styles.compact : ''}`}
+    >
       {/* Image de fond */}
       <Image
         src="/images/header.jpg"
@@ -27,16 +37,18 @@ export default function Header() {
           />
         </div>
 
-        <div className={styles.hero}>
-          <h1 className={styles.title}>
-            DÉCOUVREZ NOS RECETTES
-            <br />
-            DU QUOTIDIEN, SIMPLES ET DÉLICIEUSES
-          </h1>
+        {!compact && (
+          <div className={styles.hero}>
+            <h1 className={styles.title}>
+              DÉCOUVREZ NOS RECETTES
+              <br />
+              DU QUOTIDIEN, SIMPLES ET DÉLICIEUSES
+            </h1>
 
-          <SearchBar />
-        </div>
+            <SearchBar />
+          </div>
+        )}
       </div>
     </header>
   );
-};
+}

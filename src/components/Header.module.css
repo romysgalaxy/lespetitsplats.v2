@@ -10,6 +10,17 @@
     overflow: hidden;
 }
 
+.compact {
+    height: 120px;
+    min-height: 120px;
+    padding: 16px 24px;
+    align-items: center;
+}
+
+.compact .content {
+    justify-content: center;
+}
+
 .backgroundImage {
     object-fit: cover;
     z-index: -2;
@@ -72,6 +83,6 @@
     }
 
     .header {
-        padding: 48px 32px 64px;
+        padding: 48px 32px;
     }
 }

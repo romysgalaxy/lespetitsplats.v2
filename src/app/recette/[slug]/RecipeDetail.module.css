@@ -1,0 +1,140 @@
+.page {
+    padding: 40px 16px 64px;
+}
+
+.inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+/* IMAGE */
+
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 26px;
+    overflow: hidden;
+    height: 350px;
+}
+
+.image {
+    object-fit: cover;
+}
+
+/* CONTENU TEXTE */
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.title {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* blocs (temps, ingrédients, etc.) */
+
+.block {
+    margin-bottom: 10px;
+}
+
+.label {
+    margin: 0 0 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #7a7a7a;
+}
+
+/* Badge temps */
+
+.timeBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #ffd15b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Ingrédients */
+
+.ingredientsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+    row-gap: 8px;
+}
+
+.ingredientRow {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.ingredientName {
+    display: block;
+    font-weight: 600;
+}
+
+.ingredientQuantity {
+    display: block;
+    color: #7a7a7a;
+    margin-top: 2px;
+}
+
+/* Listes simples (ustensiles, appareils) */
+
+.simpleList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+.simpleList li {
+    margin-bottom: 4px;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.muted {
+    color: #7a7a7a;
+}
+
+/* description recette */
+
+.description {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+@media screen and (min-width: 900px) {
+    .inner {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+        align-items: flex-start;
+        gap: 48px;
+    }
+
+    .imageWrapper {
+        height: 600px;
+    }
+
+    .title {
+        font-size: 26px;
+    }
+
+    .description {
+        font-size: 14px;
+    }
+}
