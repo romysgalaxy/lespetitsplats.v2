@@ -1,0 +1,80 @@
+.searchBar {
+    width: 100%;
+    max-width: 954px;
+}
+
+.form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 11px;
+    overflow: hidden;
+    margin: 0 auto;
+    padding: 8px;
+}
+
+.input {
+    flex: 1;
+    font-size: 18px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: black;
+    width: 100%;
+    padding: 16px 20px;
+}
+
+.input::placeholder {
+    color: #7a7a7a;
+}
+
+/* Bouton Clear */
+.clearButton {
+    border: none;
+    background: transparent;
+    color: #7A7A7A;
+    cursor: pointer;
+    font-size: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin-right: 15px;
+}
+
+.clearIcon {
+    width: 20px;
+    height: 20px;
+    stroke: #525252;
+    fill: none;
+}
+
+/* Bouton Search */
+.button {
+    background-color: #1b1b1b;
+    color: white;
+    width: 62px;
+    height: 62px;
+    border-radius: 20%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+    padding: 0 15px;
+}
+
+.button:hover {
+    background: #ffd15b;
+}
+
+.icon {
+    stroke: #ffffff;
+    fill: none;
+}
+
+.button:hover .icon {
+    stroke: #000000;
+}
