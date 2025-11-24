@@ -1,0 +1,119 @@
+.card {
+    background: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+/* IMAGE + BADGE TEMPS */
+
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.image {
+    object-fit: cover;
+}
+
+.timeBadge {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    padding: 6px 14px;
+    background: #ffd15b;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #000;
+}
+
+/* CONTENU */
+
+.content {
+    padding: 22px 24px 26px;
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    margin: 0 0 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+}
+
+/* petites étiquettes "RECETTE", "INGRÉDIENTS" */
+
+.section {
+    margin-bottom: 18px;
+}
+
+.sectionLabel {
+    margin: 0 0 16px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #797979;
+}
+
+/* description de la recette */
+
+.description {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #1b1b1b;
+}
+
+/* INGREDIENTS */
+
+.ingredientsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+    row-gap: 10px;
+}
+
+.ingredient {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.ingredientName {
+    display: block;
+    font-weight: 600;
+    color: #000;
+}
+
+.ingredientQuantity {
+    display: block;
+    color: #797979;
+    margin-top: 2px;
+}
+
+/* responsive */
+
+@media screen and (min-width: 1024px) {
+    .imageWrapper {
+        height: 240px;
+    }
+
+    .title {
+        font-size: 19px;
+    }
+
+    .description {
+        font-size: 14px;
+    }
+}

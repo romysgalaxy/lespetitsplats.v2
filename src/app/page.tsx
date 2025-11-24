@@ -1,4 +1,6 @@
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import RecipeList from "@/components/RecipeList";
 // import styles from "./page.module.css";
 
 export default function Home() {
@@ -8,6 +10,8 @@ export default function Home() {
     <div>
       <main>
        <Header />
+       <RecipeList />
+       <Footer />
       </main>
     </div>
   );
