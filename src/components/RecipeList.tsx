@@ -1,14 +1,15 @@
-import recipesData from '@/data/recipes.json';
-import RecipeCard, { Recipe } from './RecipeCard';
 import styles from './RecipeList.module.css';
+import RecipeCard, { Recipe } from './RecipeCard';
 
-const recipes = recipesData as Recipe[];
+interface RecipeListProps {
+  recipes: Recipe[];
+}
 
-export default function RecipeList() {
+export default function RecipeList({ recipes }: RecipeListProps) {
   return (
-    <section className={styles.section}>
+    <section className={styles.wrapper}>
       <div className={styles.grid}>
-        {recipes.slice(0, 10).map((recipe) => (
+        {recipes.slice(0, 50).map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
       </div>
