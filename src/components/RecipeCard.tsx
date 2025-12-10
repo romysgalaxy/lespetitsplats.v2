@@ -4,9 +4,10 @@ import Link from 'next/link';
 
 export interface Ingredient {
   ingredient: string;
-  quantity?: number;
+  quantity?: number | string;  // ⬅️ autorise les deux
   unit?: string;
 }
+
 
 export interface Recipe {
   id: number;

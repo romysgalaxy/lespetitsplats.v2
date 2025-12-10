@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import styles from './TagFilters.module.css';
 import type { Recipe } from './RecipeCard';
-import Image from 'next/image';   // ⬅️ ajoute ça
 
 export type TagCategory = 'ingredients' | 'appliances' | 'ustensils';
 
@@ -19,12 +19,21 @@ interface TagFiltersProps {
   onAddTag: (type: TagCategory, value: string) => void;
   onRemoveTag: (type: TagCategory, value: string) => void;
   currentCount: number;
+  searchQuery: string;       // texte de la recherche principale
+  onClearSearch: () => void; // pour supprimer le tag de recherche
 }
 
 function normalize(value: string) {
   return value.toLowerCase().trim();
 }
 
+function formatTagLabel(value: string) {
+  const lower = value.toLocaleLowerCase('fr-FR');
+  return lower.charAt(0).toLocaleUpperCase('fr-FR') + lower.slice(1);
+}
+
+// Utilitaire pour récupérer des tags uniques à partir d'un getter
+// avec gestion simple singulier/pluriel en "s"
 function getUniqueTags(
   recipes: Recipe[],
   getter: (recipe: Recipe) => string[]
@@ -35,23 +44,15 @@ function getUniqueTags(
     getter(recipe).forEach((raw) => {
       const norm = normalize(raw);
 
-      // Gestion simple singulier/pluriel en "s"
       if (norm.endsWith('s')) {
-        // ex : "bananes" -> "banane"
         const singular = norm.slice(0, -1);
-
-        // si le singulier existe déjà, on considère que c'est un doublon
         if (map.has(singular)) {
-          return;
+          return; // on ignore "bananes" si "banane" existe déjà
         }
-        // sinon on laissera "bananes" tel quel plus bas
       } else {
-        // on est sur un singulier, on regarde si un pluriel existe déjà
         const plural = norm + 's';
-
         if (map.has(plural)) {
-          // on préfère le singulier -> on supprime le pluriel
-          map.delete(plural);
+          map.delete(plural); // on préfère le singulier
         }
       }
 
@@ -66,13 +67,11 @@ function getUniqueTags(
   );
 }
 
-
-
 interface TagDropdownProps {
   label: string;
   placeholder: string;
   items: string[];
-  selected: string[];                    // ⬅️ les tags déjà sélectionnés pour cette catégorie
+  selected: string[];
   onSelect: (value: string) => void;
   onRemove: (value: string) => void;
 }
@@ -119,12 +118,6 @@ function TagDropdown({
     onRemove(value);
     setQuery('');
   }
-
-  function formatTagLabel(value: string) {
-    const lower = value.toLocaleLowerCase('fr-FR');
-    return lower.charAt(0).toLocaleUpperCase('fr-FR') + lower.slice(1);
-  }
-
 
   return (
     <div className={styles.dropdown}>
@@ -198,8 +191,11 @@ export default function TagFilters({
   onAddTag,
   onRemoveTag,
   currentCount,
+  searchQuery,
+  onClearSearch,
 }: TagFiltersProps) {
   const hasSelected =
+    searchQuery.trim().length >= 3 ||
     selectedTags.ingredients.length > 0 ||
     selectedTags.appliances.length > 0 ||
     selectedTags.ustensils.length > 0;
@@ -222,11 +218,6 @@ export default function TagFilters({
     () => getUniqueTags(recipes, (r) => r.ustensils),
     [recipes]
   );
-
-  function formatTagLabel(value: string) {
-    const lower = value.toLocaleLowerCase('fr-FR');
-    return lower.charAt(0).toLocaleUpperCase('fr-FR') + lower.slice(1);
-  }
 
   return (
     <section className={styles.wrapper}>
@@ -266,6 +257,18 @@ export default function TagFilters({
       {/* Affichage des chips en bas, synchro avec les listes */}
       {hasSelected && (
         <div className={styles.selectedRow}>
+          {/* Tag de recherche principale */}
+          {searchQuery.trim().length >= 3 && (
+            <button
+              type="button"
+              className={`${styles.chip} ${styles.chipSearch}`}
+              onClick={onClearSearch}
+            >
+              {formatTagLabel(searchQuery)}
+              <span className={styles.chipClose}>×</span>
+            </button>
+          )}
+
           {selectedTags.ingredients.map((tag) => (
             <button
               key={`ing-${tag}`}

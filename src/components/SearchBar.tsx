@@ -1,18 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './SearchBar.module.css';
 
-export default function SearchBar() {
-  const [query, setQuery] = useState('');
+interface SearchBarProps {
+  onSearch: (value: string) => void;
+}
 
-  function handleSubmit(event) {
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [value, setValue] = useState('');
+
+  // Debounce : onSearch est appelé 300ms après la dernière frappe
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      onSearch(value);
+    }, 300);
+
+    return () => clearTimeout(handle);
+  }, [value, onSearch]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // pour l'instant la recherche n'est pas fonctionnelle
+    onSearch(value); // déclenche immédiat au submit
   }
 
   function handleClear() {
-    setQuery('');
+    setValue('');
+    onSearch('');
   }
 
   return (
@@ -22,11 +36,11 @@ export default function SearchBar() {
           type="text"
           className={styles.input}
           placeholder="Rechercher une recette, un ingrédient, ..."
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
         />
 
-        {query.length > 0 && (
+        {value.length > 0 && (
           <button
             type="button"
             className={styles.clearButton}

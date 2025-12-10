@@ -17,6 +17,12 @@
   background-color: var(--background);
 }
 
+.noResult {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
 .main {
   display: flex;
   min-height: 100vh;
@@ -91,6 +97,10 @@ a.primary {
 
 a.secondary {
   border-color: var(--button-secondary-border);
+}
+
+.content {
+  padding: 0 15px;
 }
 
 /* Enable hover only on non-touch devices */

@@ -3,14 +3,15 @@ import styles from './Header.module.css';
 import SearchBar from './SearchBar';
 
 interface HeaderProps {
-  /** 
+  /**
    * false (ou rien) = header complet avec titre + search
    * true = version compacte (logo seul, header ≈ 120px)
    */
   compact?: boolean;
+  onSearch: (value: string) => void; // ⬅️ nouvelle prop
 }
 
-export default function Header({ compact = false }: HeaderProps) {
+export default function Header({ compact = false, onSearch }: HeaderProps) {
   return (
     <header
       className={`${styles.header} ${compact ? styles.compact : ''}`}
@@ -45,7 +46,8 @@ export default function Header({ compact = false }: HeaderProps) {
               DU QUOTIDIEN, SIMPLES ET DÉLICIEUSES
             </h1>
 
-            <SearchBar />
+            {/* 🔥 SearchBar dans le header, reliée au parent */}
+            <SearchBar onSearch={onSearch} />
           </div>
         )}
       </div>
