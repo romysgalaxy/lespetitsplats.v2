@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './TagFilters.module.css';
 import type { Recipe } from './RecipeCard';
@@ -15,12 +15,12 @@ export interface SelectedTags {
 
 interface TagFiltersProps {
   recipes: Recipe[]; // recettes actuellement disponibles (déjà filtrées)
-  selectedTags: SelectedTags;
-  onAddTag: (type: TagCategory, value: string) => void;
-  onRemoveTag: (type: TagCategory, value: string) => void;
   currentCount: number;
-  searchQuery: string;       // texte de la recherche principale
-  onClearSearch: () => void; // pour supprimer le tag de recherche
+  searchQuery: string;
+  onClearSearch: () => void;
+
+  // le parent est notifié quand la sélection change
+  onSelectedTagsChange: (tags: SelectedTags) => void;
 }
 
 function normalize(value: string) {
@@ -32,12 +32,7 @@ function formatTagLabel(value: string) {
   return lower.charAt(0).toLocaleUpperCase('fr-FR') + lower.slice(1);
 }
 
-// Utilitaire pour récupérer des tags uniques à partir d'un getter
-// avec gestion simple singulier/pluriel en "s"
-function getUniqueTags(
-  recipes: Recipe[],
-  getter: (recipe: Recipe) => string[]
-): string[] {
+function getUniqueTags(recipes: Recipe[], getter: (recipe: Recipe) => string[]): string[] {
   const map = new Map<string, string>();
 
   recipes.forEach((recipe) => {
@@ -46,19 +41,13 @@ function getUniqueTags(
 
       if (norm.endsWith('s')) {
         const singular = norm.slice(0, -1);
-        if (map.has(singular)) {
-          return; // on ignore "bananes" si "banane" existe déjà
-        }
+        if (map.has(singular)) return;
       } else {
         const plural = norm + 's';
-        if (map.has(plural)) {
-          map.delete(plural); // on préfère le singulier
-        }
+        if (map.has(plural)) map.delete(plural);
       }
 
-      if (!map.has(norm)) {
-        map.set(norm, raw);
-      }
+      if (!map.has(norm)) map.set(norm, raw);
     });
   });
 
@@ -76,36 +65,22 @@ interface TagDropdownProps {
   onRemove: (value: string) => void;
 }
 
-function TagDropdown({
-  label,
-  placeholder,
-  items,
-  selected,
-  onSelect,
-  onRemove,
-}: TagDropdownProps) {
+function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }: TagDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
 
   const normQuery = normalize(query);
 
-  // tags sélectionnés qui matchent la recherche
   const filteredSelected = useMemo(
-    () =>
-      selected.filter((item) =>
-        normalize(item).includes(normQuery)
-      ),
+    () => selected.filter((item) => normalize(item).includes(normQuery)),
     [selected, normQuery]
   );
 
-  // tags disponibles (non sélectionnés) qui matchent la recherche
   const filteredAvailable = useMemo(
     () =>
       items
         .filter((item) => !selected.includes(item))
-        .filter((item) =>
-          normalize(item).includes(normQuery)
-        ),
+        .filter((item) => normalize(item).includes(normQuery)),
     [items, selected, normQuery]
   );
 
@@ -147,7 +122,6 @@ function TagDropdown({
           />
 
           <ul className={styles.tagList}>
-            {/* D'abord les tags sélectionnés, en jaune, avec croix */}
             {filteredSelected.map((item) => (
               <li key={`sel-${item}`}>
                 <button
@@ -161,7 +135,6 @@ function TagDropdown({
               </li>
             ))}
 
-            {/* Puis les tags disponibles à sélectionner */}
             {filteredAvailable.map((item) => (
               <li key={item}>
                 <button
@@ -174,10 +147,9 @@ function TagDropdown({
               </li>
             ))}
 
-            {filteredSelected.length === 0 &&
-              filteredAvailable.length === 0 && (
-                <li className={styles.empty}>Aucun résultat</li>
-              )}
+            {filteredSelected.length === 0 && filteredAvailable.length === 0 && (
+              <li className={styles.empty}>Aucun résultat</li>
+            )}
           </ul>
         </div>
       )}
@@ -187,25 +159,44 @@ function TagDropdown({
 
 export default function TagFilters({
   recipes,
-  selectedTags,
-  onAddTag,
-  onRemoveTag,
   currentCount,
   searchQuery,
   onClearSearch,
+  onSelectedTagsChange,
 }: TagFiltersProps) {
+  const [selectedTags, setSelectedTags] = useState<SelectedTags>({
+    ingredients: [],
+    appliances: [],
+    ustensils: [],
+  });
+  useEffect(() => {
+  onSelectedTagsChange(selectedTags);
+}, [selectedTags, onSelectedTagsChange]);
+
+
+function addTag(type: TagCategory, value: string) {
+  setSelectedTags((prev) => {
+    if (prev[type].includes(value)) return prev;
+    return { ...prev, [type]: [...prev[type], value] };
+  });
+}
+
+function removeTag(type: TagCategory, value: string) {
+  setSelectedTags((prev) => ({
+    ...prev,
+    [type]: prev[type].filter((t) => t !== value),
+  }));
+}
+
+
   const hasSelected =
     searchQuery.trim().length >= 3 ||
     selectedTags.ingredients.length > 0 ||
     selectedTags.appliances.length > 0 ||
     selectedTags.ustensils.length > 0;
 
-  // tous les tags possibles à partir des recettes
   const allIngredients = useMemo(
-    () =>
-      getUniqueTags(recipes, (r) =>
-        r.ingredients.map((i) => i.ingredient)
-      ),
+    () => getUniqueTags(recipes, (r) => r.ingredients.map((i) => i.ingredient)),
     [recipes]
   );
 
@@ -228,24 +219,26 @@ export default function TagFilters({
             placeholder="Rechercher un ingrédient"
             items={allIngredients}
             selected={selectedTags.ingredients}
-            onSelect={(value) => onAddTag('ingredients', value)}
-            onRemove={(value) => onRemoveTag('ingredients', value)}
+            onSelect={(value) => addTag('ingredients', value)}
+            onRemove={(value) => removeTag('ingredients', value)}
           />
+
           <TagDropdown
             label="Appareils"
             placeholder="Rechercher un appareil"
             items={allAppliances}
             selected={selectedTags.appliances}
-            onSelect={(value) => onAddTag('appliances', value)}
-            onRemove={(value) => onRemoveTag('appliances', value)}
+            onSelect={(value) => addTag('appliances', value)}
+            onRemove={(value) => removeTag('appliances', value)}
           />
+
           <TagDropdown
             label="Ustensiles"
             placeholder="Rechercher un ustensile"
             items={allUstensils}
             selected={selectedTags.ustensils}
-            onSelect={(value) => onAddTag('ustensils', value)}
-            onRemove={(value) => onRemoveTag('ustensils', value)}
+            onSelect={(value) => addTag('ustensils', value)}
+            onRemove={(value) => removeTag('ustensils', value)}
           />
         </div>
 
@@ -254,10 +247,8 @@ export default function TagFilters({
         </span>
       </div>
 
-      {/* Affichage des chips en bas, synchro avec les listes */}
       {hasSelected && (
         <div className={styles.selectedRow}>
-          {/* Tag de recherche principale */}
           {searchQuery.trim().length >= 3 && (
             <button
               type="button"
@@ -274,7 +265,7 @@ export default function TagFilters({
               key={`ing-${tag}`}
               type="button"
               className={styles.chip}
-              onClick={() => onRemoveTag('ingredients', tag)}
+              onClick={() => removeTag('ingredients', tag)}
             >
               {formatTagLabel(tag)}
               <span className={styles.chipClose}>×</span>
@@ -286,7 +277,7 @@ export default function TagFilters({
               key={`app-${tag}`}
               type="button"
               className={styles.chip}
-              onClick={() => onRemoveTag('appliances', tag)}
+              onClick={() => removeTag('appliances', tag)}
             >
               {formatTagLabel(tag)}
               <span className={styles.chipClose}>×</span>
@@ -298,7 +289,7 @@ export default function TagFilters({
               key={`ust-${tag}`}
               type="button"
               className={styles.chip}
-              onClick={() => onRemoveTag('ustensils', tag)}
+              onClick={() => removeTag('ustensils', tag)}
             >
               {formatTagLabel(tag)}
               <span className={styles.chipClose}>×</span>

@@ -8,7 +8,7 @@ interface HeaderProps {
    * true = version compacte (logo seul, header ≈ 120px)
    */
   compact?: boolean;
-  onSearch: (value: string) => void; // ⬅️ nouvelle prop
+  onSearch?: (value: string) => void;
 }
 
 export default function Header({ compact = false, onSearch }: HeaderProps) {
@@ -38,7 +38,7 @@ export default function Header({ compact = false, onSearch }: HeaderProps) {
           />
         </div>
 
-        {!compact && (
+        {!compact && onSearch && (
           <div className={styles.hero}>
             <h1 className={styles.title}>
               DÉCOUVREZ NOS RECETTES
@@ -46,7 +46,7 @@ export default function Header({ compact = false, onSearch }: HeaderProps) {
               DU QUOTIDIEN, SIMPLES ET DÉLICIEUSES
             </h1>
 
-            {/* 🔥 SearchBar dans le header, reliée au parent */}
+            {/*  SearchBar dans le header, reliée au parent */}
             <SearchBar onSearch={onSearch} />
           </div>
         )}

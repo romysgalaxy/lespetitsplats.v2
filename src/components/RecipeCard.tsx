@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export interface Ingredient {
   ingredient: string;
-  quantity?: number | string;  // ⬅️ autorise les deux
+  quantity?: number | string;  // autorise les deux
   unit?: string;
 }
 
