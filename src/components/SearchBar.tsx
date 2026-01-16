@@ -4,42 +4,53 @@ import { useEffect, useState } from 'react';
 import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
-  onSearch: (value: string) => void;
+  onSearch: (value: string) => void; // fonction appelée quand la recherche change
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  // Texte saisi dans l’input
   const [value, setValue] = useState('');
 
-  // Debounce : onSearch est appelé 300ms après la dernière frappe
+  /**
+   * Effet de debounce :
+   * - attend 300 ms après la dernière frappe
+   * - puis appelle onSearch
+   * - nettoie le timeout si value change avant la fin
+   */
   useEffect(() => {
     const handle = setTimeout(() => {
       onSearch(value);
     }, 300);
 
+    // Annule le timeout précédent
     return () => clearTimeout(handle);
   }, [value, onSearch]);
 
+  // Gère la soumission du formulaire (clic sur la loupe / Entrée)
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    onSearch(value); // déclenche immédiat au submit
+    event.preventDefault(); // empêche le rechargement de la page
+    onSearch(value); // recherche immédiate
   }
 
+  // Vide le champ de recherche
   function handleClear() {
-    setValue('');
-    onSearch('');
+    setValue('');    // réinitialise l’input
+    onSearch('');    // réinitialise la recherche
   }
 
   return (
     <div className={styles.searchBar}>
       <form className={styles.form} onSubmit={handleSubmit}>
+        {/* Champ de saisie */}
         <input
           type="text"
           className={styles.input}
           placeholder="Rechercher une recette, un ingrédient, ..."
           value={value}
-          onChange={(event) => setValue(event.target.value)}
+          onChange={(event) => setValue(event.target.value)} // met à jour value
         />
 
+        {/* Bouton pour effacer la recherche */}
         {value.length > 0 && (
           <button
             type="button"
@@ -72,6 +83,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </button>
         )}
 
+        {/* Bouton de soumission */}
         <button
           type="submit"
           className={styles.button}

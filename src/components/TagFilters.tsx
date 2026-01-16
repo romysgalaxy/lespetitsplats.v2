@@ -5,8 +5,10 @@ import Image from 'next/image';
 import styles from './TagFilters.module.css';
 import type { Recipe } from './RecipeCard';
 
+// Catégories de tags possibles
 export type TagCategory = 'ingredients' | 'appliances' | 'ustensils';
 
+// Structure des tags sélectionnés
 export interface SelectedTags {
   ingredients: string[];
   appliances: string[];
@@ -14,25 +16,29 @@ export interface SelectedTags {
 }
 
 interface TagFiltersProps {
-  recipes: Recipe[]; // recettes actuellement disponibles (déjà filtrées)
+  recipes: Recipe[]; // recettes filtrées
   currentCount: number;
   searchQuery: string;
   onClearSearch: () => void;
-
-  // le parent est notifié quand la sélection change
   onSelectedTagsChange: (tags: SelectedTags) => void;
 }
 
+// Normalise un texte simple
 function normalize(value: string) {
   return value.toLowerCase().trim();
 }
 
+// Met en forme un tag pour l'affichage
 function formatTagLabel(value: string) {
   const lower = value.toLocaleLowerCase('fr-FR');
   return lower.charAt(0).toLocaleUpperCase('fr-FR') + lower.slice(1);
 }
 
-function getUniqueTags(recipes: Recipe[], getter: (recipe: Recipe) => string[]): string[] {
+// Récupère une liste de tags uniques à partir des recettes
+function getUniqueTags(
+  recipes: Recipe[],
+  getter: (recipe: Recipe) => string[]
+): string[] {
   const map = new Map<string, string>();
 
   recipes.forEach((recipe) => {
@@ -65,17 +71,27 @@ interface TagDropdownProps {
   onRemove: (value: string) => void;
 }
 
-function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }: TagDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+// Dropdown pour une catégorie de tags
+function TagDropdown({
+  label,
+  placeholder,
+  items,
+  selected,
+  onSelect,
+  onRemove,
+}: TagDropdownProps) {
+  const [open, setOpen] = useState(false); // ouverture du menu
+  const [query, setQuery] = useState(''); // recherche interne
 
   const normQuery = normalize(query);
 
+  // Tags sélectionnés filtrés
   const filteredSelected = useMemo(
     () => selected.filter((item) => normalize(item).includes(normQuery)),
     [selected, normQuery]
   );
 
+  // Tags disponibles filtrés
   const filteredAvailable = useMemo(
     () =>
       items
@@ -84,11 +100,13 @@ function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }
     [items, selected, normQuery]
   );
 
+  // Ajoute un tag
   function handleSelect(value: string) {
     onSelect(value);
     setQuery('');
   }
 
+  // Supprime un tag
   function handleRemove(value: string) {
     onRemove(value);
     setQuery('');
@@ -104,18 +122,17 @@ function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }
         <span>{label}</span>
         <Image
           src={open ? '/images/arrow-up.svg' : '/images/arrow-down.svg'}
-          alt={open ? 'Fermer la liste' : 'Ouvrir la liste'}
+          alt=""
           width={12}
           height={8}
-          className={styles.chevron}
         />
       </button>
 
       {open && (
         <div className={styles.dropdownPanel}>
           <input
-            type="text"
             className={styles.searchInput}
+            type="text"
             placeholder={placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -124,12 +141,15 @@ function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }
           <ul className={styles.tagList}>
             {filteredSelected.map((item) => (
               <li key={`sel-${item}`}>
+                {/* <button onClick={() => handleRemove(item)}>
+                  {formatTagLabel(item)} ×
+                </button> */}
                 <button
                   type="button"
                   className={`${styles.tagItem} ${styles.tagItemSelected}`}
                   onClick={() => handleRemove(item)}
                 >
-                  <span>{formatTagLabel(item)}</span>
+                  {formatTagLabel(item)}
                   <span className={styles.chipClose}>×</span>
                 </button>
               </li>
@@ -137,6 +157,9 @@ function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }
 
             {filteredAvailable.map((item) => (
               <li key={item}>
+                {/* <button onClick={() => handleSelect(item)}>
+                  {formatTagLabel(item)}
+                </button> */}
                 <button
                   type="button"
                   className={styles.tagItem}
@@ -147,9 +170,8 @@ function TagDropdown({ label, placeholder, items, selected, onSelect, onRemove }
               </li>
             ))}
 
-            {filteredSelected.length === 0 && filteredAvailable.length === 0 && (
-              <li className={styles.empty}>Aucun résultat</li>
-            )}
+            {filteredSelected.length === 0 &&
+              filteredAvailable.length === 0 && <li>Aucun résultat</li>}
           </ul>
         </div>
       )}
@@ -164,37 +186,43 @@ export default function TagFilters({
   onClearSearch,
   onSelectedTagsChange,
 }: TagFiltersProps) {
+  // Tags sélectionnés
   const [selectedTags, setSelectedTags] = useState<SelectedTags>({
     ingredients: [],
     appliances: [],
     ustensils: [],
   });
+
+  // Informe le parent à chaque changement
   useEffect(() => {
-  onSelectedTagsChange(selectedTags);
-}, [selectedTags, onSelectedTagsChange]);
+    onSelectedTagsChange(selectedTags);
+  }, [selectedTags, onSelectedTagsChange]);
 
+  // Ajoute un tag
+  function addTag(type: TagCategory, value: string) {
+    setSelectedTags((prev) =>
+      prev[type].includes(value)
+        ? prev
+        : { ...prev, [type]: [...prev[type], value] }
+    );
+  }
 
-function addTag(type: TagCategory, value: string) {
-  setSelectedTags((prev) => {
-    if (prev[type].includes(value)) return prev;
-    return { ...prev, [type]: [...prev[type], value] };
-  });
-}
+  // Supprime un tag
+  function removeTag(type: TagCategory, value: string) {
+    setSelectedTags((prev) => ({
+      ...prev,
+      [type]: prev[type].filter((t) => t !== value),
+    }));
+  }
 
-function removeTag(type: TagCategory, value: string) {
-  setSelectedTags((prev) => ({
-    ...prev,
-    [type]: prev[type].filter((t) => t !== value),
-  }));
-}
-
-
+  // Indique si au moins un filtre est actif
   const hasSelected =
     searchQuery.trim().length >= 3 ||
     selectedTags.ingredients.length > 0 ||
     selectedTags.appliances.length > 0 ||
     selectedTags.ustensils.length > 0;
 
+  // Listes de tags possibles
   const allIngredients = useMemo(
     () => getUniqueTags(recipes, (r) => r.ingredients.map((i) => i.ingredient)),
     [recipes]
@@ -212,6 +240,7 @@ function removeTag(type: TagCategory, value: string) {
 
   return (
     <section className={styles.wrapper}>
+      {/* Filtres */}
       <div className={styles.bar}>
         <div className={styles.filters}>
           <TagDropdown
@@ -219,8 +248,8 @@ function removeTag(type: TagCategory, value: string) {
             placeholder="Rechercher un ingrédient"
             items={allIngredients}
             selected={selectedTags.ingredients}
-            onSelect={(value) => addTag('ingredients', value)}
-            onRemove={(value) => removeTag('ingredients', value)}
+            onSelect={(v) => addTag('ingredients', v)}
+            onRemove={(v) => removeTag('ingredients', v)}
           />
 
           <TagDropdown
@@ -228,8 +257,8 @@ function removeTag(type: TagCategory, value: string) {
             placeholder="Rechercher un appareil"
             items={allAppliances}
             selected={selectedTags.appliances}
-            onSelect={(value) => addTag('appliances', value)}
-            onRemove={(value) => removeTag('appliances', value)}
+            onSelect={(v) => addTag('appliances', v)}
+            onRemove={(v) => removeTag('appliances', v)}
           />
 
           <TagDropdown
@@ -237,32 +266,52 @@ function removeTag(type: TagCategory, value: string) {
             placeholder="Rechercher un ustensile"
             items={allUstensils}
             selected={selectedTags.ustensils}
-            onSelect={(value) => addTag('ustensils', value)}
-            onRemove={(value) => removeTag('ustensils', value)}
+            onSelect={(v) => addTag('ustensils', v)}
+            onRemove={(v) => removeTag('ustensils', v)}
           />
         </div>
 
+        {/* <span>{currentCount} recette{currentCount > 1 ? 's' : ''}</span> */}
         <span className={styles.count}>
           {currentCount} recette{currentCount > 1 ? 's' : ''}
         </span>
+
       </div>
 
-      {hasSelected && (
+      {/* Tags actifs */}
+      {/* {hasSelected && (
         <div className={styles.selectedRow}>
           {searchQuery.trim().length >= 3 && (
-            <button
-              type="button"
-              className={`${styles.chip} ${styles.chipSearch}`}
-              onClick={onClearSearch}
-            >
+            <button onClick={onClearSearch}>
+              {formatTagLabel(searchQuery)} ×
+            </button>
+          )}
+        </div>
+      )} */}
+      {/* {hasSelected && (
+        <div className={styles.selectedRow}>
+          {searchQuery.trim().length >= 3 && (
+            <button type="button" className={styles.chip} onClick={onClearSearch}>
+              {formatTagLabel(searchQuery)}
+              <span className={styles.chipClose}>×</span>
+            </button>
+          )}
+        </div>
+      )} */}
+      {hasSelected && (
+        <div className={styles.selectedRow}>
+          {/* Chip de recherche */}
+          {searchQuery.trim().length >= 3 && (
+            <button type="button" className={styles.chip} onClick={onClearSearch}>
               {formatTagLabel(searchQuery)}
               <span className={styles.chipClose}>×</span>
             </button>
           )}
 
+          {/* Chips ingrédients */}
           {selectedTags.ingredients.map((tag) => (
             <button
-              key={`ing-${tag}`}
+              key={`chip-ing-${tag}`}
               type="button"
               className={styles.chip}
               onClick={() => removeTag('ingredients', tag)}
@@ -272,9 +321,10 @@ function removeTag(type: TagCategory, value: string) {
             </button>
           ))}
 
+          {/* Chips appareils */}
           {selectedTags.appliances.map((tag) => (
             <button
-              key={`app-${tag}`}
+              key={`chip-app-${tag}`}
               type="button"
               className={styles.chip}
               onClick={() => removeTag('appliances', tag)}
@@ -284,9 +334,10 @@ function removeTag(type: TagCategory, value: string) {
             </button>
           ))}
 
+          {/* Chips ustensiles */}
           {selectedTags.ustensils.map((tag) => (
             <button
-              key={`ust-${tag}`}
+              key={`chip-ust-${tag}`}
               type="button"
               className={styles.chip}
               onClick={() => removeTag('ustensils', tag)}
@@ -297,6 +348,7 @@ function removeTag(type: TagCategory, value: string) {
           ))}
         </div>
       )}
+
     </section>
   );
 }
